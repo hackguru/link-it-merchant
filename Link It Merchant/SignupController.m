@@ -11,7 +11,7 @@
 #import "ViewController.h"
 
 #define signupUrlUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/users/auth/merchant/ios/%@"
-#define getUserIdUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/users/userId/merchant/ios/%@"
+#define getUserIdUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/users/userId"
 #define merchantLoggedInUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/users/insta-merchant-cb"
 
 @interface SignupController ()
@@ -76,8 +76,11 @@
     NSString *currentURL = webView.request.URL.absoluteString;
     if([currentURL rangeOfString:merchantLoggedInUrl].location == 0){
         
-        NSURL *restURL = [NSURL URLWithString:[NSString stringWithFormat:getUserIdUrl, currentNotificationToken]];
-        NSURLRequest *restRequest = [NSURLRequest requestWithURL:restURL];
+        NSURL *restURL = [NSURL URLWithString:getUserIdUrl];
+        NSMutableURLRequest *restRequest = [NSMutableURLRequest requestWithURL:restURL];
+        [restRequest setValue: currentNotificationToken forHTTPHeaderField: @"token"];
+        [restRequest setValue: @"ios" forHTTPHeaderField: @"device"];
+        [restRequest setValue: @"merchant" forHTTPHeaderField: @"userType"];
         [NSURLConnection sendAsynchronousRequest:restRequest queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
             //TODO : what if error?? - server not responding
 

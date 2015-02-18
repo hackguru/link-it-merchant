@@ -11,6 +11,7 @@
 #import <SDWebImage/UIButton+WebCache.h>
 #import "BrowserController.h"
 #import "SignupController.h"
+#import "AppDelegate.h"
 
 #define kPostedItemsUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/users/%@/postedMedias"
 #define kSubmitMessageForProduct @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/media/match/%@"
@@ -26,6 +27,9 @@ NSString * USER_ID_KEY=@"userIdKey";
     NSURLConnection *currentConnection;
     NSMutableData *apiReturnData;
     UIGestureRecognizer *keyboardDismisser;
+    BOOL _draggingView;
+    NSString *toBeshownPostIdFromRemoteNotification;
+    CGFloat headerHeight, footerHeight;
 }
 
 - (void)viewDidLoad {
@@ -38,6 +42,11 @@ NSString * USER_ID_KEY=@"userIdKey";
               initWithTarget:self action:@selector(dismissKeyboard:)];
     keyboardDismisser.cancelsTouchesInView = NO;
     [self.view addGestureRecognizer:keyboardDismisser];
+    _draggingView = NO;
+    headerHeight = self.tableView.sectionHeaderHeight;
+    footerHeight = self.tableView.sectionFooterHeight;
+    self.tableView.sectionHeaderHeight = 0;
+    self.tableView.sectionFooterHeight = 0;
 }
 
 - (void)dismissKeyboard:(UITapGestureRecognizer *) sender
@@ -45,6 +54,78 @@ NSString * USER_ID_KEY=@"userIdKey";
     [self.view endEditing:YES];
     [self.tableView reloadData];
 }
+
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    _draggingView = YES;
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    _draggingView = NO;
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    NSInteger pullingDetectFrom = 50;
+    if (scrollView.contentOffset.y < -pullingDetectFrom) {
+        _draggingView = NO;
+        //Pull Down
+        [self updateTopOfList];
+    } else if (scrollView.contentSize.height <= scrollView.frame.size.height && scrollView.contentOffset.y > pullingDetectFrom) {
+        _draggingView = NO;
+        //Pull Up
+    } else if (scrollView.contentSize.height > scrollView.frame.size.height &&
+               scrollView.contentSize.height-scrollView.frame.size.height-scrollView.contentOffset.y < -pullingDetectFrom) {
+        _draggingView = NO;
+        //Pull Up
+        [self getMoreForBottomOfList];
+    }
+}
+
+- (void) newInstaPost
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString * newPost = [defaults stringForKey:kMostRecentNotificationForPostKey.copy];
+    if(newPost != nil){
+        toBeshownPostIdFromRemoteNotification = newPost;
+        [defaults setObject:nil forKey:kMostRecentNotificationForPostKey];
+        [defaults synchronize];
+        [self updateTopOfList];
+    }
+}
+
+- (void)updateTopOfList{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    NSString *currentUserId = [defaults stringForKey:USER_ID_KEY];
+    
+    if(currentUserId != nil){
+        NSString *startDate =  nil;
+        NSString *endDate =  nil;
+        if(items.count){
+            startDate = [items.firstObject valueForKey:@"created"];
+        }
+        [self loadContentForUser:currentUserId from:startDate to:endDate];
+        self.tableView.sectionHeaderHeight = headerHeight;
+        [self.tableView reloadData];
+    }
+}
+
+- (void)getMoreForBottomOfList{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    NSString *currentUserId = [defaults stringForKey:USER_ID_KEY];
+    
+    if(currentUserId!=nil){
+        NSString *startDate =  nil;
+        NSString *endDate =  nil;
+        if(items.count){
+            endDate = [items.lastObject valueForKey:@"created"];
+        }
+        [self loadContentForUser:currentUserId from:startDate to:endDate];
+        self.tableView.sectionFooterHeight = footerHeight;
+        [self.tableView reloadData];
+    }
+}
+
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     
@@ -58,27 +139,56 @@ NSString * USER_ID_KEY=@"userIdKey";
         [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         // didRotateFromInterfaceOrientation goes here (nothing for now)
-        CGRect screenRect = [[UIScreen mainScreen] bounds];
-        CGFloat screenHeight = screenRect.size.height;
+        CGFloat tableHeight = self.tableView.frame.size.height;
         CGFloat cellHeight = [self tableView:self.tableView estimatedHeightForRowAtIndexPath:currentIndexInTable];
-        int cellNumberToGoToInViewRect = floor(screenHeight / cellHeight / 2);
-        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:currentIndexInTable.row - cellNumberToGoToInViewRect
+        int cellNumberToGoToInViewRect = floor(tableHeight / cellHeight / 2);
+        int cellToGoInTable = currentIndexInTable.row - cellNumberToGoToInViewRect;
+        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:cellToGoInTable
                                                               inSection:currentIndexInTable.section]
                           atScrollPosition:UITableViewScrollPositionTop animated:YES];
-        
     }];
 }
 
-- (void)viewDidAppear:(BOOL)animated{
+- (void)viewWillAppear:(BOOL)animated{
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    // Get the results out
     NSString *currentUserId = [defaults stringForKey:USER_ID_KEY];
     
     if(currentUserId == nil) {
         [self performSegueWithIdentifier:@"segueToSignupPage" sender:self];
     } else {
-        [self loadContentForUser:currentUserId];
+        NSString *startDate =  nil;
+        NSString *endDate =  nil;
+        if(items.count){
+            startDate = [items.lastObject valueForKey:@"created"];
+            endDate = [items.firstObject valueForKey:@"created"];
+        }
+        [self loadContentForUser:currentUserId from:startDate to:endDate];
+        
+        toBeshownPostIdFromRemoteNotification = [defaults stringForKey:kMostRecentNotificationForPostKey];
+        if (toBeshownPostIdFromRemoteNotification != nil) {
+            [defaults setObject:nil forKey:kMostRecentNotificationForPostKey];
+            [defaults synchronize];
+            [self updateTopOfList];
+        } else {
+            [defaults addObserver:self
+                        forKeyPath:kMostRecentNotificationForPostKey
+                           options:NSKeyValueObservingOptionNew
+                           context:NULL];
+            
+        }
+    }
+}
+
+- (void) observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
+                         change:(NSDictionary *)change context:(void *)context
+{
+    if (object == [NSUserDefaults standardUserDefaults] && [keyPath isEqualToString:kMostRecentNotificationForPostKey]) {
+        [self newInstaPost];
+    }
+    else {
+        [super observeValueForKeyPath:keyPath ofObject:object
+                               change:change context:context];
     }
 }
 
@@ -87,10 +197,21 @@ NSString * USER_ID_KEY=@"userIdKey";
     // Dispose of any resources that can be recreated.
 }
 
-- (void) loadContentForUser:(NSString *) userId{
-    NSURL *restURL = [NSURL URLWithString:[NSString stringWithFormat:kPostedItemsUrl, userId]];
-    NSURLRequest *restRequest = [NSURLRequest requestWithURL:restURL];
+- (void) loadContentForUser:(NSString *) userId from:(NSString *) startDate to:(NSString *) endDate {
     
+    NSURL *restURL = [NSURL URLWithString:[NSString stringWithFormat:kPostedItemsUrl, userId]];
+    if(startDate != nil){
+        restURL = [self URLByAppendingQueryStringKey:@"startDate" andValue:startDate forUrl:restURL];
+    }
+    if(endDate != nil){
+        restURL = [self URLByAppendingQueryStringKey:@"endDate" andValue:endDate forUrl:restURL];
+    }
+    NSMutableURLRequest *restRequest = [NSMutableURLRequest requestWithURL:restURL];
+    NSString *currentNotificationToken = self.getRegId;
+    [restRequest setValue: currentNotificationToken forHTTPHeaderField: @"token"];
+    [restRequest setValue: @"ios" forHTTPHeaderField: @"device"];
+    [restRequest setValue: @"merchant" forHTTPHeaderField: @"userType"];
+
     // we will want to cancel any current connections
     if(currentConnection)
     {
@@ -115,36 +236,59 @@ NSString * USER_ID_KEY=@"userIdKey";
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     // Return the number of rows in the section.
-    return items.count;
+    if(items.count>0){
+        return items.count;
+    }
+    return 1;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSInteger index = indexPath.row;
-    NSString *identifier = @"posted-item";
-    NSDictionary *item = [items objectAtIndex:index];
-    ListItem *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
-    [cell.instaImage sd_setBackgroundImageWithURL:[NSURL URLWithString:[[[item valueForKey:@"images"] valueForKey:@"low_resolution"] valueForKey:@"url"]] forState:UIControlStateNormal
-                       placeholderImage:[UIImage imageNamed:@"loading"]];
-    NSString *linkSS = [item valueForKey:@"productLinkScreenshot"];
-    if(linkSS != nil){
-        [cell.productLinkImage sd_setBackgroundImageWithURL:[NSURL URLWithString:linkSS] forState:UIControlStateNormal
-                                           placeholderImage:[UIImage imageNamed:@"loading"]];
-    } else  {
-        [cell.productLinkImage setBackgroundImage:[UIImage imageNamed:@"notLinked"] forState:UIControlStateNormal];
+    if (items.count>0) {
+        NSString *identifier = @"posted-item";
+        NSDictionary *item = [items objectAtIndex:index];
+        ListItem *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
+        [cell.instaImage sd_setBackgroundImageWithURL:[NSURL URLWithString:[[[item valueForKey:@"images"] valueForKey:@"low_resolution"] valueForKey:@"url"]] forState:UIControlStateNormal
+                                     placeholderImage:[UIImage imageNamed:@"loading"]];
+        NSString *linkSS = [item valueForKey:@"productLinkScreenshot"];
+        if(linkSS != nil){
+            [cell.productLinkImage sd_setBackgroundImageWithURL:[NSURL URLWithString:linkSS] forState:UIControlStateNormal
+                                               placeholderImage:[UIImage imageNamed:@"loading"]];
+        } else  {
+            [cell.productLinkImage setBackgroundImage:[UIImage imageNamed:@"notLinked"] forState:UIControlStateNormal];
+        }
+        
+        [cell.descriptionLabel setText:[item valueForKey:@"productDescription"]];
+        [cell.descriptionLabel setTag: index];
+        
+        [cell.productLinkImage setTag: index];
+        
+        return cell;
     }
-    
-    [cell.descriptionLabel setText:[item valueForKey:@"productDescription"]];
-    [cell.descriptionLabel setTag: index];
-    
-    [cell.productLinkImage setTag: index];
-    
-    return cell;
+    return [tableView dequeueReusableCellWithIdentifier:@"emptyTable" forIndexPath:indexPath];
+}
+-(UIView *) tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    static NSString *CellIdentifier = @"loadingCell";
+    UITableViewCell *headerView = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    return headerView;
+}
+
+-(UIView *) tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+    static NSString *CellIdentifier = @"loadingCell";
+    UITableViewCell *footerView = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    return footerView;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath{
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    CGFloat screenWidth = screenRect.size.width;
-    return screenWidth/2 + 40;
+    if (items.count>0) {
+        CGRect screenRect = [[UIScreen mainScreen] bounds];
+        CGFloat screenWidth = screenRect.size.width;
+        if(indexPath.row == 0){
+            return screenWidth/2 + 45;
+        }
+        return screenWidth/2 + 50;
+    }
+    return 300;
 }
 
 -(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
@@ -163,6 +307,10 @@ NSString * USER_ID_KEY=@"userIdKey";
     if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
         [cell setLayoutMargins:UIEdgeInsetsZero];
     }
+    
+    if(items.count > 0 && indexPath.row == 0){
+        ((ListItem *)cell).topMargin.constant = 0;
+    }
 }
 
 #pragma mark - NSURLConnection Delegate
@@ -178,6 +326,8 @@ NSString * USER_ID_KEY=@"userIdKey";
 - (void)connection:(NSURLConnection*)connection didFailWithError:(NSError*)error {
     NSLog(@"URL Connection Failed!");
     currentConnection = nil;
+    self.tableView.sectionHeaderHeight = 0;
+    self.tableView.sectionFooterHeight = 0;
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
@@ -188,7 +338,9 @@ NSString * USER_ID_KEY=@"userIdKey";
     if (error != nil) {
         NSLog(@"%@", [error localizedDescription]);
     } else {
-        items = [[returnedDict objectForKey:@"results"] mutableCopy];
+        [self updateItemsWith:[returnedDict objectForKey:@"results"]];
+        self.tableView.sectionHeaderHeight = 0;
+        self.tableView.sectionFooterHeight = 0;
         [self.tableView reloadData];
     }
 }
@@ -198,11 +350,20 @@ NSString * USER_ID_KEY=@"userIdKey";
     if ([[segue identifier] isEqualToString:@"showProductLink"])
     {
         BrowserController *browser = [segue destinationViewController];
-        NSDictionary *item = [items objectAtIndex:((UIButton *)sender).tag];
+        NSDictionary *item;
+        if([sender isKindOfClass:UIButton.class]){
+            item = [items objectAtIndex:((UIButton *)sender).tag];
+        } else {
+            //coming from self
+            item = [items objectAtIndex:[self getItemIndexById:toBeshownPostIdFromRemoteNotification]];
+            toBeshownPostIdFromRemoteNotification = nil;
+        }
         NSString *link = [item valueForKey:@"linkToProduct"];
         NSString *imageId = [item valueForKey:@"_id"];
+        NSString *instaImageUrl = [[[item valueForKey:@"images"] valueForKey:@"low_resolution"] valueForKey:@"url"];
         [browser setLink:link];
         [browser setImageId:imageId];
+        [browser setInstaImageUrl:instaImageUrl];
     }
 }
 
@@ -236,6 +397,21 @@ NSString * USER_ID_KEY=@"userIdKey";
                 }
             }            [defaults synchronize];
             [self performSegueWithIdentifier:@"segueToSignupPage" sender:self];
+            NSURL *restURL = [NSURL URLWithString:kUpdateRegIdUrl];
+            NSMutableURLRequest *restRequest = [NSMutableURLRequest requestWithURL:restURL];
+            [restRequest setHTTPMethod:@"POST"];
+            [restRequest setValue: @"application/json" forHTTPHeaderField: @"Accept"];
+            [restRequest setValue: @"application/json; charset=utf-8" forHTTPHeaderField: @"content-type"];
+            [restRequest setValue: [defaults valueForKey:NOTIFICATION_TOKEN_KEY.copy] forHTTPHeaderField:@"token"];
+            [restRequest setValue: @"ios" forHTTPHeaderField: @"device"];
+            [restRequest setValue: @"merchant" forHTTPHeaderField: @"userType"];
+            
+            [NSURLConnection sendAsynchronousRequest:restRequest queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+                //TODO: what to do?
+                return;
+            }];
+            
+            
             break;
     }
 }
@@ -264,6 +440,11 @@ NSString * USER_ID_KEY=@"userIdKey";
     [requestForSubmittingUrl setValue: @"application/json; charset=utf-8" forHTTPHeaderField: @"content-type"];
     [requestForSubmittingUrl setHTTPBody: jsonData];
     
+    NSString *currentNotificationToken = self.getRegId;
+    [requestForSubmittingUrl setValue: currentNotificationToken forHTTPHeaderField: @"token"];
+    [requestForSubmittingUrl setValue: @"ios" forHTTPHeaderField: @"device"];
+    [requestForSubmittingUrl setValue: @"merchant" forHTTPHeaderField: @"userType"];
+    
     [NSURLConnection sendAsynchronousRequest: requestForSubmittingUrl
                                        queue: [NSOperationQueue mainQueue]
                            completionHandler: ^(NSURLResponse *response, NSData *data, NSError *error) {
@@ -290,6 +471,81 @@ NSString * USER_ID_KEY=@"userIdKey";
      ];
 
     
+}
+
+- (NSString *)getRegId{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    // Get the results out
+    NSString *currentNotificationToken = [defaults stringForKey:NOTIFICATION_TOKEN_KEY.copy];
+    
+    return currentNotificationToken;
+
+}
+
+- (NSURL *)URLByAppendingQueryStringKey:(NSString *)key andValue:(NSString *)value forUrl:(NSURL *)url{
+    if (![key length] || ![value length]) {
+        return url;
+    }
+    
+    NSString *URLString = [[NSString alloc] initWithFormat:@"%@%@%@", [url absoluteString],
+                           [url query] ? @"&" : @"?", [NSString stringWithFormat:@"%@=%@", [key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],[value stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    NSURL *theURL = [NSURL URLWithString:URLString];
+    return theURL;
+}
+
+- (int)getItemIndexById:(NSString *)id{
+    for(int i=0; i<items.count; i++){
+        if([[items[i] valueForKey:@"_id"] isEqualToString:id]){
+            return i;
+        }
+    }
+    return -1;
+}
+
+- (void) updateItemsWith:(NSArray *)newItems{
+    if(items == nil){
+        items = newItems.mutableCopy;
+        self.tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
+        return;
+    }
+    for(int i=0; i<newItems.count; i++){
+        int currentIndex = [self getItemIndexById:[newItems[i] valueForKey:@"_id"]];
+        if(currentIndex >= 0){
+            [items replaceObjectAtIndex:currentIndex withObject:newItems[i]];
+        } else {
+            [self insertIntoItemsSorted:newItems[i]];
+        }
+    }
+}
+
+- (void)insertIntoItemsSorted:(NSDictionary *)toAdd{
+    for(int i=0; i<items.count; i++){
+        if([items[i][@"created"] caseInsensitiveCompare:toAdd[@"created"]] == NSOrderedAscending){
+            [items insertObject:toAdd atIndex:i];
+            if (i==0){
+                [self newItemsAddedToTheTop:toAdd];
+            }
+            return;
+        }
+    }
+    [items addObject:toAdd];
+}
+
+-(void)newItemsAddedToTheTop:(NSDictionary *) newItem{
+    if([newItem[@"_id"] isEqualToString:toBeshownPostIdFromRemoteNotification]){
+        //TODO Move to the browser
+        [self.tableView scrollsToTop];
+        [self performSegueWithIdentifier:@"showProductLink" sender:self];
+    }
+}
+
+-(void)viewDidDisappear:(BOOL)animated
+{
+    @try {
+        [[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:kMostRecentNotificationForPostKey];
+    }
+    @catch (NSException * __unused exception) {}
 }
 
 

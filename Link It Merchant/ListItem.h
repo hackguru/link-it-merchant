@@ -17,6 +17,7 @@
 @property (nonatomic, weak) IBOutlet UIButton *instaImage;
 @property (nonatomic, weak) IBOutlet UIButton *productLinkImage;
 @property (nonatomic, weak) IBOutlet UITextField *descriptionLabel;
+@property (nonatomic, weak) IBOutlet NSLayoutConstraint *topMargin;
 
 @end
 

@@ -13,5 +13,6 @@
 @synthesize instaImage = _instaImage;
 @synthesize productLinkImage = _productLinkImage;
 @synthesize descriptionLabel = _descriptionLabel;
+@synthesize topMargin = _topMargin;
 
 @end

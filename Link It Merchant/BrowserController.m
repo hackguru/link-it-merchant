@@ -8,6 +8,8 @@
 
 #import "BrowserController.h"
 #import <QuartzCore/QuartzCore.h>
+#import "AppDelegate.h"
+#import <SDWebImage/UIImageView+WebCache.h>
 
 #define kSubmitScreenshotUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/media/matchScreenShot/%@"
 #define kSubmitUrlForProduct @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/media/match/%@"
@@ -25,6 +27,8 @@
 @synthesize webView = _webView;
 @synthesize link = _link;
 @synthesize urlTextField = _urlTextField;
+@synthesize instaImageUrl = _instaImageUrl;
+@synthesize toolBar = _toolBar;
 @synthesize progressBar = _progressBar;
 @synthesize imageId = _imageId;
 
@@ -36,8 +40,31 @@
     } else  {
         [self loadRequestFromString: @"http://www.google.com"];
     }
-    
+    UIImageView *instaImage = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 35,35)];
+    [instaImage sd_setImageWithURL:[NSURL URLWithString:self.instaImageUrl] placeholderImage:[UIImage imageNamed:@"loading"]];
+    UIBarButtonItem *instaImageButton =[[UIBarButtonItem alloc] initWithCustomView:instaImage];
+    NSMutableArray *currentItems = self.toolBar.items.mutableCopy;
+    [currentItems insertObject:instaImageButton atIndex:0];
+    [self.toolBar setItems:currentItems];
+    self.progressBar.hidden = YES;
 }
+
+- (void)viewWillAppear:(BOOL)animated{
+    [[NSUserDefaults standardUserDefaults] addObserver:self
+                                            forKeyPath:kMostRecentNotificationForPostKey
+                                               options:NSKeyValueObservingOptionNew
+                                               context:NULL];
+}
+
+
+-(void)viewDidDisappear:(BOOL)animated
+{
+    @try {
+        [[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:kMostRecentNotificationForPostKey];
+    }
+    @catch (NSException * __unused exception) {}
+}
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -55,30 +82,7 @@
     }
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
     
-    self.progressBar.hidden = false;
-    self.progressBar.progress = 0;
-    isDoneLoadingAPage = false;
-    progressBarTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(timerCallback) userInfo:nil repeats:YES];
-
     [self.webView loadRequest:urlRequest];
-}
-
--(void)timerCallback {
-    if (isDoneLoadingAPage) {
-        if (self.progressBar.progress >= 1) {
-            self.progressBar.hidden = true;
-            [progressBarTimer invalidate];
-        }
-        else {
-            self.progressBar.progress += 0.1;
-        }
-    }
-    else {
-        self.progressBar.progress += 0.005;
-        if (self.progressBar.progress >= 0.95) {
-            self.progressBar.progress = 0.95;
-        }
-    }
 }
 
 - (IBAction)goBack:(id)sender{
@@ -182,6 +186,12 @@
     NSString *screenshotUrlString = [NSString stringWithFormat:kSubmitScreenshotUrl, self.imageId];
     NSURL* screenshotRequestURL = [NSURL URLWithString:screenshotUrlString];
     [screenshotSubmitRequest setURL:screenshotRequestURL];
+   
+    
+    NSString *currentNotificationToken = self.getRegId;
+    [screenshotSubmitRequest setValue: currentNotificationToken forHTTPHeaderField: @"token"];
+    [screenshotSubmitRequest setValue: @"ios" forHTTPHeaderField: @"device"];
+    [screenshotSubmitRequest setValue: @"merchant" forHTTPHeaderField: @"userType"];
     
     [NSURLConnection sendAsynchronousRequest:screenshotSubmitRequest queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
         //TODO : what if error?? - server not responding
@@ -224,7 +234,11 @@
     [requestForSubmittingUrl setValue: @"application/json" forHTTPHeaderField: @"Accept"];
     [requestForSubmittingUrl setValue: @"application/json; charset=utf-8" forHTTPHeaderField: @"content-type"];
     [requestForSubmittingUrl setHTTPBody: jsonData];
-    
+
+    [requestForSubmittingUrl setValue: currentNotificationToken forHTTPHeaderField: @"token"];
+    [requestForSubmittingUrl setValue: @"ios" forHTTPHeaderField: @"device"];
+    [requestForSubmittingUrl setValue: @"merchant" forHTTPHeaderField: @"userType"];
+
     [NSURLConnection sendAsynchronousRequest: requestForSubmittingUrl
                                        queue: [NSOperationQueue mainQueue]
                            completionHandler: ^(NSURLResponse *response, NSData *data, NSError *error) {
@@ -266,10 +280,15 @@
             }
             @catch (NSException * __unused exception) {}
         }
+    } else if (object == [NSUserDefaults standardUserDefaults] && [keyPath isEqualToString:kMostRecentNotificationForPostKey] && [[NSUserDefaults standardUserDefaults] valueForKey:kMostRecentNotificationForPostKey] != nil) {
+        [self dismissViewControllerAnimated:YES completion:nil];
     }
     else {
-        [super observeValueForKeyPath:keyPath ofObject:object
-                               change:change context:context];
+        @try{
+            [super observeValueForKeyPath:keyPath ofObject:object
+                                   change:change context:context];
+        }
+        @catch (NSException * __unused exception) {}
     }
 }
 
@@ -278,5 +297,46 @@
     isDoneLoadingAPage = true;
     [self.urlTextField setText:webView.request.URL.absoluteString];
 }
+
+- (NSString *)getRegId{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    // Get the results out
+    NSString *currentNotificationToken = [defaults stringForKey:NOTIFICATION_TOKEN_KEY.copy];
+    
+    return currentNotificationToken;
+    
+}
+
+- (BOOL)webView:(UIWebView *)webView
+shouldStartLoadWithRequest:(NSURLRequest *)request
+   navigationType:(UIWebViewNavigationType)navigationType {
+    if(self.progressBar.hidden){
+        self.progressBar.hidden = false;
+        self.progressBar.progress = 0;
+        isDoneLoadingAPage = false;
+        progressBarTimer = [NSTimer scheduledTimerWithTimeInterval:0.03 target:self selector:@selector(timerCallback) userInfo:nil repeats:YES];
+    }
+    return YES;
+}
+
+-(void)timerCallback {
+    if (isDoneLoadingAPage) {
+        if (self.progressBar.progress >= 1) {
+            self.progressBar.hidden = true;
+            [progressBarTimer invalidate];
+        }
+        else {
+            self.progressBar.progress += 0.1;
+        }
+    }
+    else {
+        self.progressBar.progress += 0.005;
+        if (self.progressBar.progress >= 0.95) {
+            self.progressBar.progress = 0.95;
+        }
+    }
+}
+
 
 @end

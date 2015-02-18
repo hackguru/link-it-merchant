@@ -9,8 +9,6 @@
 #import "AppDelegate.h"
 #import "NSData+Conversion.h"
 
-#define kUpdateRegIdUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/users/updateRegId/merchant/ios/%@/%@"
-//#define kUpdateRegIdUrl @"http://192.168.1.15:3000/users/updateRegId/merchant/ios/%@/%@"
 NSString * NOTIFICATION_TOKEN_KEY=@"notificationToken";
 
 @interface AppDelegate ()
@@ -67,6 +65,7 @@ NSString * NOTIFICATION_TOKEN_KEY=@"notificationToken";
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber: 0];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
@@ -78,14 +77,29 @@ NSString * NOTIFICATION_TOKEN_KEY=@"notificationToken";
     
     // Get the results out
     NSString *currentNotificationToken = [defaults stringForKey:NOTIFICATION_TOKEN_KEY];
-    
+
+    //We cannot update after cause the first time we get this its always going to be nil from setting store
     [defaults setObject:devTokenstring forKey:NOTIFICATION_TOKEN_KEY];
     [defaults synchronize]; // this method is optional
-    
+
     if(currentNotificationToken != nil){
-        NSURL *restURL = [NSURL URLWithString:[NSString stringWithFormat:kUpdateRegIdUrl, currentNotificationToken, devTokenstring]];
+        NSURL *restURL = [NSURL URLWithString:kUpdateRegIdUrl];
         NSMutableURLRequest *restRequest = [NSMutableURLRequest requestWithURL:restURL];
+        NSDictionary *jsonDict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                  devTokenstring, @"newRegId",
+                                  nil];
+        
+        NSError *error;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonDict options:0 error:&error];
+        
         [restRequest setHTTPMethod:@"POST"];
+        [restRequest setValue: @"application/json" forHTTPHeaderField: @"Accept"];
+        [restRequest setValue: @"application/json; charset=utf-8" forHTTPHeaderField: @"content-type"];
+        [restRequest setValue: currentNotificationToken forHTTPHeaderField:@"token"];
+        [restRequest setValue: @"ios" forHTTPHeaderField: @"device"];
+        [restRequest setValue: @"merchant" forHTTPHeaderField: @"userType"];
+        [restRequest setHTTPBody: jsonData];
+
         [NSURLConnection sendAsynchronousRequest:restRequest queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
             //TODO: what to do?
             return;
@@ -99,7 +113,9 @@ NSString * NOTIFICATION_TOKEN_KEY=@"notificationToken";
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))handler{
     [[UIApplication sharedApplication] setApplicationIconBadgeNumber: 0];
-    NSLog(@"Notification:%@", userInfo);
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:userInfo[@"postId"] forKey:kMostRecentNotificationForPostKey];
+    [defaults synchronize];
 }
 
 @end

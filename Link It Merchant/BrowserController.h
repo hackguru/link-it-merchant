@@ -20,10 +20,13 @@
 
 @property (weak, nonatomic) IBOutlet UIProgressView *progressBar;
 
+@property (weak, nonatomic) IBOutlet UIToolbar *toolBar;
+
 @property (strong, nonatomic) NSString *link;
 
 @property (strong, nonatomic) NSString *imageId;
 
+@property (strong, nonatomic) NSString *instaImageUrl;
 
 @end
 
