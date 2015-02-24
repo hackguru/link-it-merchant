@@ -13,8 +13,8 @@
 #import "SignupController.h"
 #import "AppDelegate.h"
 
-#define kPostedItemsUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/users/%@/postedMedias"
-#define kSubmitMessageForProduct @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/media/match/%@"
+#define kPostedItemsUrl @"http://api.linkmy.photos/users/%@/postedMedias"
+#define kSubmitMessageForProduct @"http://api.linkmy.photos/media/match/%@"
 NSString * USER_ID_KEY=@"userIdKey";
 
 
@@ -129,24 +129,28 @@ NSString * USER_ID_KEY=@"userIdKey";
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     
-    // willRotateToInterfaceOrientation code goes here
-    NSArray *indexes = [self.tableView indexPathsForVisibleRows];
-    int index = floor(indexes.count / 2);
-    NSIndexPath *currentIndexInTable = indexes[index];
-    
-    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        // willAnimateRotationToInterfaceOrientation code goes here
+    if(items!= nil && items.count>0){
+        // willRotateToInterfaceOrientation code goes here
+        NSArray *indexes = [self.tableView indexPathsForVisibleRows];
+        int index = floor(indexes.count / 2);
+        NSIndexPath *currentIndexInTable = indexes[index];
+        
+        [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+            // willAnimateRotationToInterfaceOrientation code goes here
+            [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+        } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+            // didRotateFromInterfaceOrientation goes here (nothing for now)
+            CGFloat tableHeight = self.tableView.frame.size.height;
+            CGFloat cellHeight = [self tableView:self.tableView estimatedHeightForRowAtIndexPath:currentIndexInTable];
+            int cellNumberToGoToInViewRect = floor(tableHeight / cellHeight / 2);
+            int cellToGoInTable = currentIndexInTable.row - cellNumberToGoToInViewRect;
+            [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:cellToGoInTable
+                                                                      inSection:currentIndexInTable.section]
+                                  atScrollPosition:UITableViewScrollPositionTop animated:YES];
+        }];
+    } else {
         [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        // didRotateFromInterfaceOrientation goes here (nothing for now)
-        CGFloat tableHeight = self.tableView.frame.size.height;
-        CGFloat cellHeight = [self tableView:self.tableView estimatedHeightForRowAtIndexPath:currentIndexInTable];
-        int cellNumberToGoToInViewRect = floor(tableHeight / cellHeight / 2);
-        int cellToGoInTable = currentIndexInTable.row - cellNumberToGoToInViewRect;
-        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:cellToGoInTable
-                                                              inSection:currentIndexInTable.section]
-                          atScrollPosition:UITableViewScrollPositionTop animated:YES];
-    }];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated{
@@ -411,6 +415,7 @@ NSString * USER_ID_KEY=@"userIdKey";
                 return;
             }];
             
+            items = nil;
             
             break;
     }
@@ -548,5 +553,11 @@ NSString * USER_ID_KEY=@"userIdKey";
     @catch (NSException * __unused exception) {}
 }
 
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if (textField.text.length >= 46 && ![string isEqualToString:@""])
+        return NO;
+    return YES;
+}
 
 @end

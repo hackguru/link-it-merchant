@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#define kUpdateRegIdUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/users/updateRegId"
+#define kUpdateRegIdUrl @"http://api.linkmy.photos/users/updateRegId"
 #define kMostRecentNotificationForPostKey @"notificationId"
 //#define kUpdateRegIdUrl @"http://192.168.1.16:3000/users/updateRegId"
 

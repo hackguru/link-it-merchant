@@ -4,6 +4,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -24,13 +25,14 @@
                                         <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Edc-jr-xfC">
                                             <rect key="frame" x="47" y="248" width="533" height="40"/>
                                             <subviews>
-                                                <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="The photo you just liked has more information!" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="34M-Wl-DQO">
+                                                <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="The photo you just liked has more information!" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="34M-Wl-DQO">
                                                     <rect key="frame" x="8" y="6" width="517" height="17"/>
                                                     <color key="textColor" red="0.17254901960784313" green="0.35294117647058826" blue="0.49803921568627452" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="HelveticaNeue-MediumItalic" family="Helvetica Neue" pointSize="14"/>
                                                     <textInputTraits key="textInputTraits" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
                                                     <connections>
                                                         <action selector="saveMessage:" destination="9Ov-ok-86p" eventType="editingDidEndOnExit" id="xAO-SB-Oht"/>
+                                                        <outlet property="delegate" destination="9Ov-ok-86p" id="IGr-FK-bH5"/>
                                                     </connections>
                                                 </textField>
                                             </subviews>
@@ -131,8 +133,8 @@
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="eQf-wH-1e5" id="JZe-Na-dwg">
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="As soons as you post new pics in your instagram feed we will show them here for you!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="E81-1R-j7O">
-                                            <rect key="frame" x="46" y="10" width="509" height="66"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="As soons as you post new instagrams, they will appear here!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="E81-1R-j7O">
+                                            <rect key="frame" x="46" y="10" width="602" height="66"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             <color key="textColor" red="0.2274509804" green="0.59607843140000005" blue="0.90980392160000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
@@ -216,7 +218,7 @@
                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Go to your website" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="d8M-Lo-dtD">
                                         <rect key="frame" x="8" y="9" width="530" height="31"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits" keyboardType="URL" returnKeyType="go"/>
+                                        <textInputTraits key="textInputTraits" autocorrectionType="no" keyboardType="URL" returnKeyType="go"/>
                                         <connections>
                                             <action selector="loadRequestFromAddressField:" destination="P9V-T7-qdF" eventType="editingDidEndOnExit" id="7df-9m-AkU"/>
                                         </connections>
@@ -310,6 +312,12 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" misplaced="YES" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="hCV-R8-InI">
+                                <rect key="frame" x="175" y="42" width="150" height="2"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="2" id="NT9-6H-QuD"/>
+                                </constraints>
+                            </progressView>
                             <webView contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CnB-Ip-Pff">
                                 <rect key="frame" x="28" y="69" width="545" height="485"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -317,16 +325,54 @@
                                     <outlet property="delegate" destination="1A0-fH-Wvc" id="U4E-9Q-r3L"/>
                                 </connections>
                             </webView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="videoCover" translatesAutoresizingMaskIntoConstraints="NO" id="0LN-uQ-vyV">
+                                <rect key="frame" x="180" y="464" width="240" height="128"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Yh4-IB-myC">
+                                <rect key="frame" x="245" y="473" width="110" height="110"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="81"/>
+                                <state key="normal" title="▶︎">
+                                    <color key="titleColor" cocoaTouchSystemColor="scrollViewTexturedBackgroundColor"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="playMovie:" destination="1A0-fH-Wvc" eventType="touchUpInside" id="RNt-qo-k0A"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TiF-1d-fTs">
+                                <rect key="frame" x="535" y="75" width="30" height="30"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="25"/>
+                                <state key="normal" title="↻">
+                                    <color key="titleColor" red="0.41960784313725491" green="0.58039215686274515" blue="0.85882352941176465" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="reload:" destination="1A0-fH-Wvc" eventType="touchUpInside" id="cAZ-Cf-tof"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="CnB-Ip-Pff" firstAttribute="top" secondItem="pAb-xK-dn8" secondAttribute="bottom" id="6Xz-oD-c0y"/>
-                            <constraint firstItem="CnB-Ip-Pff" firstAttribute="leading" secondItem="GjC-kd-Qzj" secondAttribute="leadingMargin" constant="-15" id="9rg-RR-amX"/>
-                            <constraint firstAttribute="trailingMargin" secondItem="CnB-Ip-Pff" secondAttribute="trailing" constant="-15" id="Mbu-5C-kaD"/>
-                            <constraint firstItem="rZH-pv-6Gm" firstAttribute="top" secondItem="CnB-Ip-Pff" secondAttribute="bottom" constant="-15" id="ajX-D8-ubQ"/>
+                            <constraint firstItem="Yh4-IB-myC" firstAttribute="centerY" secondItem="0LN-uQ-vyV" secondAttribute="centerY" id="6yk-AS-j4S"/>
+                            <constraint firstItem="CnB-Ip-Pff" firstAttribute="top" secondItem="hCV-R8-InI" secondAttribute="bottom" id="9jp-hx-TsB"/>
+                            <constraint firstItem="CnB-Ip-Pff" firstAttribute="leading" secondItem="GjC-kd-Qzj" secondAttribute="leading" id="9rg-RR-amX"/>
+                            <constraint firstItem="hCV-R8-InI" firstAttribute="top" secondItem="pAb-xK-dn8" secondAttribute="bottom" id="AeY-bW-ERH"/>
+                            <constraint firstAttribute="trailing" secondItem="hCV-R8-InI" secondAttribute="trailing" id="DSF-O3-OPf"/>
+                            <constraint firstItem="rZH-pv-6Gm" firstAttribute="top" secondItem="0LN-uQ-vyV" secondAttribute="bottom" id="G6o-r7-4VW"/>
+                            <constraint firstAttribute="trailing" secondItem="0LN-uQ-vyV" secondAttribute="trailing" id="Kbd-EF-POv"/>
+                            <constraint firstAttribute="trailing" secondItem="CnB-Ip-Pff" secondAttribute="trailing" id="Mbu-5C-kaD"/>
+                            <constraint firstItem="TiF-1d-fTs" firstAttribute="top" secondItem="hCV-R8-InI" secondAttribute="bottom" constant="3" id="PG2-fo-V7Y"/>
+                            <constraint firstAttribute="centerX" secondItem="Yh4-IB-myC" secondAttribute="centerX" id="RhN-s0-6Kz"/>
+                            <constraint firstAttribute="trailing" secondItem="TiF-1d-fTs" secondAttribute="trailing" constant="3" id="YO1-be-cd8"/>
+                            <constraint firstItem="rZH-pv-6Gm" firstAttribute="top" secondItem="CnB-Ip-Pff" secondAttribute="bottom" id="ajX-D8-ubQ"/>
+                            <constraint firstAttribute="height" secondItem="0LN-uQ-vyV" secondAttribute="height" multiplier="4:1" id="fcW-XL-1FS"/>
+                            <constraint firstItem="hCV-R8-InI" firstAttribute="leading" secondItem="GjC-kd-Qzj" secondAttribute="leading" id="lB9-Uc-FHd"/>
+                            <constraint firstItem="0LN-uQ-vyV" firstAttribute="leading" secondItem="GjC-kd-Qzj" secondAttribute="leading" id="yfr-nn-v29"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="progressBar" destination="hCV-R8-InI" id="3Ed-G7-cWE"/>
+                        <outlet property="retryButton" destination="TiF-1d-fTs" id="VmT-d5-bxA"/>
                         <outlet property="webView" destination="CnB-Ip-Pff" id="LIn-oP-MWC"/>
                     </connections>
                 </viewController>
@@ -337,6 +383,7 @@
     </scenes>
     <resources>
         <image name="logout" width="71" height="69"/>
+        <image name="videoCover" width="800" height="400"/>
     </resources>
     <color key="tintColor" red="0.22745098039215686" green="0.59607843137254901" blue="0.90980392156862744" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

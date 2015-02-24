@@ -11,8 +11,8 @@
 #import "AppDelegate.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 
-#define kSubmitScreenshotUrl @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/media/matchScreenShot/%@"
-#define kSubmitUrlForProduct @"http://ec2-54-149-40-205.us-west-2.compute.amazonaws.com/media/match/%@"
+#define kSubmitScreenshotUrl @"http://api.linkmy.photos/media/matchScreenShot/%@"
+#define kSubmitUrlForProduct @"http://api.linkmy.photos/media/match/%@"
 
 @interface BrowserController ()
 

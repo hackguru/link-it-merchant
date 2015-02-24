@@ -12,7 +12,7 @@ extern const NSString *USER_ID_KEY;
 extern const NSString *USERNAME_KEY;
 extern const NSString *PROFILE_IMAGE_URL_KEY;
 
-@interface ViewController : UITableViewController <NSURLConnectionDelegate>
+@interface ViewController : UITableViewController <NSURLConnectionDelegate, UITextFieldDelegate>
 
 @end
 
