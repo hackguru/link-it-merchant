@@ -1,6 +1,6 @@
 GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
-HEADER_SEARCH_PATHS = "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/PEPhotoCropEditor" "${PODS_ROOT}/Headers/Public/SDWebImage"
-OTHER_CFLAGS = $(inherited) -isystem "${PODS_ROOT}/Headers/Public" -isystem "${PODS_ROOT}/Headers/Public/PEPhotoCropEditor" -isystem "${PODS_ROOT}/Headers/Public/SDWebImage"
-OTHER_LDFLAGS = -ObjC -l"Pods-PEPhotoCropEditor" -l"Pods-SDWebImage" -framework "AVFoundation" -framework "ImageIO" -framework "QuartzCore"
+HEADER_SEARCH_PATHS = "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/PEPhotoCropEditor" "${PODS_ROOT}/Headers/Public/SDWebImage" "${PODS_ROOT}/Headers/Public/UIImage-ResizeMagick"
+OTHER_CFLAGS = $(inherited) -isystem "${PODS_ROOT}/Headers/Public" -isystem "${PODS_ROOT}/Headers/Public/PEPhotoCropEditor" -isystem "${PODS_ROOT}/Headers/Public/SDWebImage" -isystem "${PODS_ROOT}/Headers/Public/UIImage-ResizeMagick"
+OTHER_LDFLAGS = -ObjC -l"Pods-PEPhotoCropEditor" -l"Pods-SDWebImage" -l"Pods-UIImage-ResizeMagick" -framework "AVFoundation" -framework "ImageIO" -framework "QuartzCore"
 OTHER_LIBTOOLFLAGS = $(OTHER_LDFLAGS)
 PODS_ROOT = ${SRCROOT}/Pods

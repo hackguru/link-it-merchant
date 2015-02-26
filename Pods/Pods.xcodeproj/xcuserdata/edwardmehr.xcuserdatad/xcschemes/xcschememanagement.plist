@@ -6,33 +6,43 @@
 	<dict>
 		<key>Pods-PEPhotoCropEditor.xcscheme</key>
 		<dict>
-			<key>orderHint</key>
-			<integer>2</integer>
+			<key>isShown</key>
+			<false/>
 		</dict>
 		<key>Pods-SDWebImage.xcscheme</key>
 		<dict>
-			<key>orderHint</key>
-			<integer>3</integer>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Pods-UIImage-ResizeMagick.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
 		</dict>
 		<key>Pods.xcscheme</key>
 		<dict>
-			<key>orderHint</key>
-			<integer>1</integer>
+			<key>isShown</key>
+			<false/>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>7AC46C2E274AC769F07A59A2</key>
+		<key>01C2F81FA7E9A17559E6E043</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>A9CC3823A72BA0B9450870F9</key>
+		<key>25C9EDD2CC60A357967E3C39</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>C5791AC4C072E5916E21A16E</key>
+		<key>32A4FA4D475E1F582EC13764</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>96869F387E0EDB3CC482B92D</key>
 		<dict>
 			<key>primary</key>
 			<true/>

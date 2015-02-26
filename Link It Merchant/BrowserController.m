@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "AppDelegate.h"
 #import <SDWebImage/UIImageView+WebCache.h>
+#import "UIImage+ResizeMagick.h"
 
 #define kSubmitScreenshotUrl @"http://api.linkmy.photos/media/matchScreenShot/%@"
 #define kSubmitUrlForProduct @"http://api.linkmy.photos/media/match/%@"
@@ -104,7 +105,7 @@
     
     [self.webView.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-
+    
     PECropViewController *controller = [[PECropViewController alloc] init];
     controller.delegate = self;
     controller.image = image;
@@ -142,6 +143,14 @@
 
 - (void)cropViewController:(PECropViewController *)controller didFinishCroppingImage:(UIImage *)croppedImage
 {
+    //resizing the image
+    UIImage *imageToSend = croppedImage;
+    if(croppedImage.size.width > 640){
+        imageToSend = [croppedImage resizedImageByWidth:640];
+    }
+    
+
+    
     cropController = controller;
     
     // the boundary string : a random string, that will not repeat in post data, to separate post data fields.
@@ -162,7 +171,7 @@
     NSMutableData *body = [NSMutableData data];
     
     // add image data
-    NSData *imageData = UIImageJPEGRepresentation(croppedImage, 1.0);
+    NSData *imageData = UIImageJPEGRepresentation(imageToSend, 1.0);
     if (imageData) {
         [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
         [body appendData:[@"Content-Disposition: form-data; name=\"upload\"; filename=\"ios-image.jpg\"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
