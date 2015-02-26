@@ -363,6 +363,12 @@ NSString * USER_ID_KEY=@"userIdKey";
             toBeshownPostIdFromRemoteNotification = nil;
         }
         NSString *link = [item valueForKey:@"linkToProduct"];
+        if(link == nil || [link isEqualToString:@""]){
+            link = [[item valueForKey:@"owner"] valueForKey:@"website"];
+        }
+        if([link isEqualToString:@""]){
+            link = nil;
+        }
         NSString *imageId = [item valueForKey:@"_id"];
         NSString *instaImageUrl = [[[item valueForKey:@"images"] valueForKey:@"low_resolution"] valueForKey:@"url"];
         [browser setLink:link];
