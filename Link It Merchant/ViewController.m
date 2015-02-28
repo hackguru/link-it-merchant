@@ -312,8 +312,12 @@ NSString * USER_ID_KEY=@"userIdKey";
         [cell setLayoutMargins:UIEdgeInsetsZero];
     }
     
-    if(items.count > 0 && indexPath.row == 0){
-        ((ListItem *)cell).topMargin.constant = 0;
+    if(items.count > 0){
+        if(indexPath.row == 0){
+            ((ListItem *)cell).topMargin.constant = 0;
+        }else{
+            ((ListItem *)cell).topMargin.constant = 5;
+        }
     }
 }
 
@@ -375,6 +379,11 @@ NSString * USER_ID_KEY=@"userIdKey";
         [browser setImageId:imageId];
         [browser setInstaImageUrl:instaImageUrl];
     }
+}
+
+- (IBAction)gotToInsta:(id)sender
+{
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"instagram://app"]];
 }
 
 - (IBAction)logout:(id)sender{

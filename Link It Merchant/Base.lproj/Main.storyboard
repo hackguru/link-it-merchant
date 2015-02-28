@@ -157,6 +157,11 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" id="Ma5-ts-05Z">
+                        <barButtonItem key="leftBarButtonItem" image="insta" id="c0W-wC-QJp">
+                            <connections>
+                                <action selector="gotToInsta:" destination="9Ov-ok-86p" id="Av5-1f-eaz"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" image="logout" id="739-jt-Vse">
                             <connections>
                                 <action selector="logout:" destination="9Ov-ok-86p" id="Iwg-0w-Hff"/>
@@ -382,6 +387,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="insta" width="71" height="71"/>
         <image name="logout" width="71" height="69"/>
         <image name="videoCover" width="800" height="400"/>
     </resources>
