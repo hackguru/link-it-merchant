@@ -29,7 +29,7 @@
                                                     <rect key="frame" x="8" y="6" width="517" height="17"/>
                                                     <color key="textColor" red="0.17254901960784313" green="0.35294117647058826" blue="0.49803921568627452" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <fontDescription key="fontDescription" name="HelveticaNeue-MediumItalic" family="Helvetica Neue" pointSize="14"/>
-                                                    <textInputTraits key="textInputTraits" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
+                                                    <textInputTraits key="textInputTraits" returnKeyType="done"/>
                                                     <connections>
                                                         <action selector="saveMessage:" destination="9Ov-ok-86p" eventType="editingDidEndOnExit" id="xAO-SB-Oht"/>
                                                         <outlet property="delegate" destination="9Ov-ok-86p" id="IGr-FK-bH5"/>
