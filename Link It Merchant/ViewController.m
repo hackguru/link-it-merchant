@@ -66,9 +66,11 @@ NSString * USER_ID_KEY=@"userIdKey";
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     NSInteger pullingDetectFrom = 50;
     if (scrollView.contentOffset.y < -pullingDetectFrom) {
-        _draggingView = NO;
         //Pull Down
-        [self updateTopOfList];
+        if(_draggingView){
+            _draggingView = NO;
+            [self updateTopOfList];
+        }
     } else if (scrollView.contentSize.height <= scrollView.frame.size.height && scrollView.contentOffset.y > pullingDetectFrom) {
         _draggingView = NO;
         //Pull Up
@@ -76,6 +78,8 @@ NSString * USER_ID_KEY=@"userIdKey";
                scrollView.contentSize.height-scrollView.frame.size.height-scrollView.contentOffset.y < -pullingDetectFrom) {
         _draggingView = NO;
         //Pull Up
+    } else if (scrollView.contentOffset.y + scrollView.frame.size.height >= scrollView.contentSize.height - (pullingDetectFrom*8)) {
+        // we are at the end
         [self getMoreForBottomOfList];
     }
 }

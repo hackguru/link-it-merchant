@@ -387,9 +387,9 @@
         </scene>
     </scenes>
     <resources>
-        <image name="insta" width="71" height="71"/>
-        <image name="logout" width="71" height="69"/>
+        <image name="insta" width="70" height="70"/>
+        <image name="logout" width="70" height="70"/>
         <image name="videoCover" width="800" height="400"/>
     </resources>
-    <color key="tintColor" red="0.22745098039215686" green="0.59607843137254901" blue="0.90980392156862744" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+    <color key="tintColor" red="0.12941176470588237" green="0.56862745098039214" blue="0.75686274509803919" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>
