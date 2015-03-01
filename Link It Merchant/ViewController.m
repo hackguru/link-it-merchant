@@ -574,7 +574,7 @@ NSString * USER_ID_KEY=@"userIdKey";
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-    if (textField.text.length >= 46 && ![string isEqualToString:@""])
+    if (textField.text.length >= 46 && ![string isEqualToString:@""] && ![string isEqualToString:@"\n"])
         return NO;
     return YES;
 }
