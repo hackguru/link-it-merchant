@@ -228,7 +228,7 @@
     NSString *urlSubmitURLString = [NSString stringWithFormat:kSubmitUrlForProduct, self.imageId];
     NSString *urlSubmitURL = [NSURL URLWithString:urlSubmitURLString];
     NSDictionary *jsonDict = [[NSDictionary alloc] initWithObjectsAndKeys:
-                              self.urlTextField.text, @"linkToProduct",
+                              self.webView.request.URL.absoluteString, @"linkToProduct",
                               nil];
     
     NSError *error;
@@ -304,7 +304,9 @@
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     isDoneLoadingAPage = true;
-    [self.urlTextField setText:webView.request.URL.absoluteString];
+    if(!self.urlTextField.isFirstResponder){
+        [self.urlTextField setText:webView.request.URL.absoluteString];
+    }
 }
 
 - (NSString *)getRegId{
