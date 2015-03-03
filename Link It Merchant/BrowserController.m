@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "AppDelegate.h"
 #import <SDWebImage/UIImageView+WebCache.h>
+#import <SDWebImage/UIButton+WebCache.h>
 #import "UIImage+ResizeMagick.h"
 
 #define kSubmitScreenshotUrl @"http://api.linkmy.photos/media/matchScreenShot/%@"
@@ -42,10 +43,15 @@
         [self loadRequestFromString: @"http://www.google.com"];
     }
     UIImageView *instaImage = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 35,35)];
-    [instaImage sd_setImageWithURL:[NSURL URLWithString:self.instaImageUrl] placeholderImage:[UIImage imageNamed:@"loading"]];
-    UIBarButtonItem *instaImageButton =[[UIBarButtonItem alloc] initWithCustomView:instaImage];
+    UIButton *instaImageButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 35,35)];
+    [instaImageButton sd_setImageWithURL:[NSURL URLWithString:self.instaImageUrl] forState:UIControlStateNormal placeholderImage:[UIImage imageNamed:@"loading"]];
+    [self.instaImageBig sd_setImageWithURL:[NSURL URLWithString:self.instaImageUrlBig] placeholderImage:[UIImage imageNamed:@"loading"]];
+    [instaImageButton addTarget:self action:@selector(instaImageTouched) forControlEvents:UIControlEventTouchDown];
+    [instaImageButton addTarget:self action:@selector(instaImageUntouched) forControlEvents:UIControlEventTouchUpInside];
+    [instaImageButton addTarget:self action:@selector(instaImageUntouched) forControlEvents:UIControlEventTouchUpOutside];
+    UIBarButtonItem *instaImageBarButton =[[UIBarButtonItem alloc] initWithCustomView:instaImageButton];
     NSMutableArray *currentItems = self.toolBar.items.mutableCopy;
-    [currentItems insertObject:instaImageButton atIndex:0];
+    [currentItems insertObject:instaImageBarButton atIndex:0];
     [self.toolBar setItems:currentItems];
     self.progressBar.hidden = YES;
 }
@@ -349,5 +355,12 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     }
 }
 
+- (void)instaImageTouched{
+    self.instaImageBig.hidden = NO;
+}
+
+- (void)instaImageUntouched{
+    self.instaImageBig.hidden = YES;
+}
 
 @end

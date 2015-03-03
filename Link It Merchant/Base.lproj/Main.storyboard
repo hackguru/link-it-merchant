@@ -221,7 +221,7 @@
                                         </connections>
                                     </button>
                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Go to your website" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="d8M-Lo-dtD">
-                                        <rect key="frame" x="8" y="9" width="530" height="31"/>
+                                        <rect key="frame" x="8" y="9" width="530" height="30"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocorrectionType="no" keyboardType="URL" returnKeyType="go"/>
                                         <connections>
@@ -276,6 +276,10 @@
                                     <constraint firstAttribute="height" constant="2" id="4cg-kz-bsY"/>
                                 </constraints>
                             </progressView>
+                            <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uKS-cY-Aaq">
+                                <rect key="frame" x="180" y="20" width="240" height="572"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="lightTextColor"/>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
@@ -287,14 +291,19 @@
                             <constraint firstAttribute="trailing" secondItem="uwh-9A-1zB" secondAttribute="trailing" id="Axn-CT-60r"/>
                             <constraint firstItem="uwh-9A-1zB" firstAttribute="top" secondItem="h19-mW-5tZ" secondAttribute="bottom" id="Hg4-te-tRQ"/>
                             <constraint firstAttribute="trailing" secondItem="ldo-O6-NMC" secondAttribute="trailing" id="MEq-YW-YYi"/>
+                            <constraint firstAttribute="trailing" secondItem="uKS-cY-Aaq" secondAttribute="trailing" id="bq1-aS-mDU"/>
+                            <constraint firstItem="Mlb-JS-zS1" firstAttribute="top" secondItem="uKS-cY-Aaq" secondAttribute="bottom" id="bwF-JC-KUl"/>
                             <constraint firstAttribute="trailing" secondItem="nN4-24-kfr" secondAttribute="trailing" id="em2-h4-m3h"/>
+                            <constraint firstItem="uKS-cY-Aaq" firstAttribute="top" secondItem="h19-mW-5tZ" secondAttribute="bottom" id="fx0-KY-XWv"/>
                             <constraint firstItem="uwh-9A-1zB" firstAttribute="leading" secondItem="qH0-ce-cX7" secondAttribute="leading" id="g2U-JG-XZf"/>
                             <constraint firstItem="nN4-24-kfr" firstAttribute="top" secondItem="ldo-O6-NMC" secondAttribute="bottom" id="g3h-qO-oAJ"/>
                             <constraint firstItem="hs2-VH-PB4" firstAttribute="leading" secondItem="qH0-ce-cX7" secondAttribute="leading" id="j5w-xl-5Gx"/>
                             <constraint firstItem="ldo-O6-NMC" firstAttribute="top" secondItem="hs2-VH-PB4" secondAttribute="bottom" id="rbm-94-p8w"/>
+                            <constraint firstItem="uKS-cY-Aaq" firstAttribute="leading" secondItem="qH0-ce-cX7" secondAttribute="leading" id="vw7-JE-Xo9"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="instaImageBig" destination="uKS-cY-Aaq" id="RMG-bX-xhX"/>
                         <outlet property="progressBar" destination="hs2-VH-PB4" id="Uhf-PC-Obv"/>
                         <outlet property="toolBar" destination="nN4-24-kfr" id="E7o-cP-V1h"/>
                         <outlet property="urlTextField" destination="d8M-Lo-dtD" id="T1F-2U-ZQf"/>

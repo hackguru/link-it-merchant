@@ -28,6 +28,10 @@
 
 @property (strong, nonatomic) NSString *instaImageUrl;
 
+@property (strong, nonatomic) NSString *instaImageUrlBig;
+
+@property (strong, nonatomic) IBOutlet UIImageView *instaImageBig;
+
 @end
 
 

@@ -174,7 +174,6 @@ NSString * USER_ID_KEY=@"userIdKey";
         NSString *endDate =  nil;
         if(items.count){
             startDate = [items.lastObject valueForKey:@"created"];
-            endDate = [items.firstObject valueForKey:@"created"];
         }
         [self loadContentForUser:currentUserId from:startDate to:endDate];
         
@@ -389,10 +388,12 @@ NSString * USER_ID_KEY=@"userIdKey";
             link = nil;
         }
         NSString *imageId = [item valueForKey:@"_id"];
-        NSString *instaImageUrl = [[[item valueForKey:@"images"] valueForKey:@"low_resolution"] valueForKey:@"url"];
+        NSString *instaImageUrl = [[[item valueForKey:@"images"] valueForKey:@"thumbnail"] valueForKey:@"url"];
+        NSString *instaImageUrlBig = [[[item valueForKey:@"images"] valueForKey:@"standard_resolution"] valueForKey:@"url"];
         [browser setLink:link];
         [browser setImageId:imageId];
         [browser setInstaImageUrl:instaImageUrl];
+        [browser setInstaImageUrlBig:instaImageUrlBig];
     }
 }
 
@@ -449,6 +450,10 @@ NSString * USER_ID_KEY=@"userIdKey";
             
             break;
     }
+}
+
+- (void) textFieldDidBeginEditing:(UITextField *)textField {
+    [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:textField.tag inSection:0] atScrollPosition:UITableViewScrollPositionTop animated:YES];
 }
 
 - (IBAction)saveMessage:(id)sender{
