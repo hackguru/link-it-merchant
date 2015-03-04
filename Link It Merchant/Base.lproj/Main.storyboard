@@ -57,11 +57,11 @@
                                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                                     </state>
                                                     <connections>
-                                                        <segue destination="P9V-T7-qdF" kind="presentation" identifier="showProductLink" modalTransitionStyle="flipHorizontal" id="0n6-HH-x2Z"/>
+                                                        <action selector="tapOnScreenShot:" destination="9Ov-ok-86p" eventType="touchUpInside" id="bFk-i3-Mbr"/>
                                                     </connections>
                                                 </button>
                                                 <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3gT-iK-WCi">
-                                                    <rect key="frame" x="247" y="57" width="20" height="114"/>
+                                                    <rect key="frame" x="248" y="16" width="20" height="128"/>
                                                     <color key="backgroundColor" red="0.78823529411764703" green="0.78431372549019607" blue="0.79607843137254897" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" constant="1" id="X1u-Rr-skc"/>
@@ -69,12 +69,34 @@
                                                 </view>
                                                 <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UD8-iQ-jRq">
                                                     <rect key="frame" x="18" y="16" width="227" height="190"/>
+                                                    <gestureRecognizers/>
                                                     <constraints>
                                                         <constraint firstAttribute="width" secondItem="UD8-iQ-jRq" secondAttribute="height" multiplier="1:1" id="6Le-Nc-G3T"/>
                                                     </constraints>
                                                     <state key="normal">
                                                         <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                                     </state>
+                                                    <connections>
+                                                        <action selector="dismissLongPress:" destination="9Ov-ok-86p" eventType="touchDown" id="vYq-MM-ZdY"/>
+                                                    </connections>
+                                                </button>
+                                                <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jCp-U9-XdN">
+                                                    <rect key="frame" x="5" y="5" width="64" height="64"/>
+                                                    <state key="normal" image="delete">
+                                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                    </state>
+                                                    <connections>
+                                                        <action selector="deleteButtonTapped:" destination="9Ov-ok-86p" eventType="touchUpInside" id="dOB-iw-rMV"/>
+                                                    </connections>
+                                                </button>
+                                                <button hidden="YES" opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cQI-8R-PoL">
+                                                    <rect key="frame" x="276" y="16" width="64" height="64"/>
+                                                    <state key="normal" image="unmatch">
+                                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                    </state>
+                                                    <connections>
+                                                        <action selector="unmatchButtonTapped:" destination="9Ov-ok-86p" eventType="touchUpInside" id="oso-Bu-KQR"/>
+                                                    </connections>
                                                 </button>
                                             </subviews>
                                             <constraints>
@@ -85,10 +107,14 @@
                                                 <constraint firstItem="3gT-iK-WCi" firstAttribute="top" secondItem="L1P-1I-MBi" secondAttribute="top" id="BGZ-c5-gXY"/>
                                                 <constraint firstItem="XoU-Bd-XKE" firstAttribute="top" secondItem="L1P-1I-MBi" secondAttribute="top" id="Mwj-aY-0Xu"/>
                                                 <constraint firstAttribute="bottom" secondItem="3gT-iK-WCi" secondAttribute="bottom" id="Vnm-Ln-leL"/>
+                                                <constraint firstItem="cQI-8R-PoL" firstAttribute="top" secondItem="L1P-1I-MBi" secondAttribute="top" constant="5" id="Vws-Bc-5Hg"/>
+                                                <constraint firstItem="jCp-U9-XdN" firstAttribute="leading" secondItem="L1P-1I-MBi" secondAttribute="leading" constant="5" id="bfg-sh-uVK"/>
                                                 <constraint firstItem="XoU-Bd-XKE" firstAttribute="leading" secondItem="3gT-iK-WCi" secondAttribute="trailing" id="d5g-X2-ldy"/>
                                                 <constraint firstItem="3gT-iK-WCi" firstAttribute="leading" secondItem="UD8-iQ-jRq" secondAttribute="trailing" id="kZX-Ey-m1d"/>
+                                                <constraint firstItem="jCp-U9-XdN" firstAttribute="top" secondItem="L1P-1I-MBi" secondAttribute="top" constant="5" id="kro-5E-qIf"/>
                                                 <constraint firstAttribute="bottom" secondItem="UD8-iQ-jRq" secondAttribute="bottom" id="mTZ-wc-vEt"/>
                                                 <constraint firstAttribute="trailing" secondItem="XoU-Bd-XKE" secondAttribute="trailing" id="q0h-d4-mYI"/>
+                                                <constraint firstItem="cQI-8R-PoL" firstAttribute="leading" secondItem="3gT-iK-WCi" secondAttribute="trailing" constant="5" id="ry0-eR-LQ2"/>
                                             </constraints>
                                         </view>
                                     </subviews>
@@ -105,10 +131,12 @@
                                 </tableViewCellContentView>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <connections>
+                                    <outlet property="deleteButton" destination="jCp-U9-XdN" id="LLB-Ur-yQq"/>
                                     <outlet property="descriptionLabel" destination="34M-Wl-DQO" id="I03-gR-RAL"/>
                                     <outlet property="instaImage" destination="UD8-iQ-jRq" id="fDQ-zY-n3l"/>
                                     <outlet property="productLinkImage" destination="XoU-Bd-XKE" id="V3o-Fd-M2C"/>
                                     <outlet property="topMargin" destination="hfM-oa-4He" id="G8N-eb-HW6"/>
+                                    <outlet property="unmatchButton" destination="cQI-8R-PoL" id="WoZ-AY-MTi"/>
                                 </connections>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="loadingCell" id="xnS-N3-ysZ">
@@ -170,11 +198,12 @@
                     </navigationItem>
                     <connections>
                         <segue destination="1A0-fH-Wvc" kind="presentation" identifier="segueToSignupPage" id="MFH-lz-VgV"/>
+                        <segue destination="P9V-T7-qdF" kind="presentation" identifier="showProductLink" modalTransitionStyle="flipHorizontal" id="y6f-Ho-ExY"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Rjc-tf-rIj" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-190" y="493"/>
+            <point key="canvasLocation" x="-190" y="494"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="aac-k3-ABX">
@@ -396,8 +425,10 @@
         </scene>
     </scenes>
     <resources>
+        <image name="delete" width="64" height="64"/>
         <image name="insta" width="70" height="70"/>
         <image name="logout" width="70" height="70"/>
+        <image name="unmatch" width="64" height="64"/>
         <image name="videoCover" width="800" height="400"/>
     </resources>
     <color key="tintColor" red="0.12941176470588237" green="0.56862745098039214" blue="0.75686274509803919" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

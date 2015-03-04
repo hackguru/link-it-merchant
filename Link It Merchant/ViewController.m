@@ -15,6 +15,9 @@
 
 #define kPostedItemsUrl @"http://api.linkmy.photos/users/%@/postedMedias"
 #define kSubmitMessageForProduct @"http://api.linkmy.photos/media/match/%@"
+#define kDeleteMediaUrl @"http://api.linkmy.photos/media/%@"
+#define kUnmatchUrl @"http://api.linkmy.photos/media/match/%@"
+
 NSString * USER_ID_KEY=@"userIdKey";
 
 
@@ -31,6 +34,7 @@ NSString * USER_ID_KEY=@"userIdKey";
     BOOL _loadingMoreInBottom;
     NSString *toBeshownPostIdFromRemoteNotification;
     CGFloat headerHeight, footerHeight;
+    NSInteger beingDeletedIndex, beingUnmatchedIndex;
 }
 
 - (void)viewDidLoad {
@@ -49,6 +53,8 @@ NSString * USER_ID_KEY=@"userIdKey";
     footerHeight = self.tableView.sectionFooterHeight;
     self.tableView.sectionHeaderHeight = 0;
     self.tableView.sectionFooterHeight = 0;
+    beingDeletedIndex = -1;
+    beingUnmatchedIndex = -1;
 }
 
 - (void)dismissKeyboard:(UITapGestureRecognizer *) sender
@@ -262,6 +268,13 @@ NSString * USER_ID_KEY=@"userIdKey";
         ListItem *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
         [cell.instaImage sd_setBackgroundImageWithURL:[NSURL URLWithString:[[[item valueForKey:@"images"] valueForKey:@"low_resolution"] valueForKey:@"url"]] forState:UIControlStateNormal
                                      placeholderImage:[UIImage imageNamed:@"loading"]];
+        [cell.instaImage setTag: index];
+        if(cell.instaImage.gestureRecognizers.count == 0){
+            UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
+                                                       initWithTarget:self action:@selector(instaImageLongPress:)];
+            [cell.instaImage addGestureRecognizer:longPress];
+        }
+
         NSString *linkSS = [item valueForKey:@"productLinkScreenshot"];
         if(linkSS != nil){
             [cell.productLinkImage sd_setBackgroundImageWithURL:[NSURL URLWithString:linkSS] forState:UIControlStateNormal
@@ -269,11 +282,20 @@ NSString * USER_ID_KEY=@"userIdKey";
         } else  {
             [cell.productLinkImage setBackgroundImage:[UIImage imageNamed:@"notLinked"] forState:UIControlStateNormal];
         }
-        
+        if(cell.productLinkImage.gestureRecognizers.count == 0){
+            UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc]
+                                                       initWithTarget:self action:@selector(screenshotLongPress:)];
+            [cell.productLinkImage addGestureRecognizer:longPress];
+        }
+        [cell.productLinkImage setTag: index];
+
         [cell.descriptionLabel setText:[item valueForKey:@"productDescription"]];
         [cell.descriptionLabel setTag: index];
         
-        [cell.productLinkImage setTag: index];
+        
+        cell.deleteButton.hidden = beingDeletedIndex!=index;
+        cell.unmatchButton.hidden = beingUnmatchedIndex!=index;
+        cell.unmatchButton.tag = index;
         
         return cell;
     }
@@ -416,39 +438,65 @@ NSString * USER_ID_KEY=@"userIdKey";
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    switch(buttonIndex) {
-        case 0: //"No" pressed
-            //do something?
-            break;
-        case 1: //"Yes" pressed
-            [defaults setObject:nil forKey:USER_ID_KEY.copy];
-            NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
-            
-            NSArray *allCookies = [cookies cookies];
-            
-            for(NSHTTPCookie *cookie in allCookies) {
-                if([[cookie domain] rangeOfString:@"instagram.com"].location != NSNotFound) {
-                    [cookies deleteCookie:cookie];
-                }
-            }            [defaults synchronize];
-            [self performSegueWithIdentifier:@"segueToSignupPage" sender:self];
-            NSURL *restURL = [NSURL URLWithString:kUpdateRegIdUrl];
-            NSMutableURLRequest *restRequest = [NSMutableURLRequest requestWithURL:restURL];
-            [restRequest setHTTPMethod:@"POST"];
-            [restRequest setValue: @"application/json" forHTTPHeaderField: @"Accept"];
-            [restRequest setValue: @"application/json; charset=utf-8" forHTTPHeaderField: @"content-type"];
-            [restRequest setValue: [defaults valueForKey:NOTIFICATION_TOKEN_KEY.copy] forHTTPHeaderField:@"token"];
-            [restRequest setValue: @"ios" forHTTPHeaderField: @"device"];
-            [restRequest setValue: @"merchant" forHTTPHeaderField: @"userType"];
-            
-            [NSURLConnection sendAsynchronousRequest:restRequest queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-                //TODO: what to do?
-                return;
-            }];
-            
-            items = nil;
-            
-            break;
+    if([alertView.title isEqualToString:@"Logout"]){
+        switch(buttonIndex) {
+            case 0: //"No" pressed
+                //do something?
+                break;
+            case 1: //"Yes" pressed
+                [defaults setObject:nil forKey:USER_ID_KEY.copy];
+                NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+                
+                NSArray *allCookies = [cookies cookies];
+                
+                for(NSHTTPCookie *cookie in allCookies) {
+                    if([[cookie domain] rangeOfString:@"instagram.com"].location != NSNotFound) {
+                        [cookies deleteCookie:cookie];
+                    }
+                }            [defaults synchronize];
+                [self performSegueWithIdentifier:@"segueToSignupPage" sender:self];
+                NSURL *restURL = [NSURL URLWithString:kUpdateRegIdUrl];
+                NSMutableURLRequest *restRequest = [NSMutableURLRequest requestWithURL:restURL];
+                [restRequest setHTTPMethod:@"POST"];
+                [restRequest setValue: @"application/json" forHTTPHeaderField: @"Accept"];
+                [restRequest setValue: @"application/json; charset=utf-8" forHTTPHeaderField: @"content-type"];
+                [restRequest setValue: [defaults valueForKey:NOTIFICATION_TOKEN_KEY.copy] forHTTPHeaderField:@"token"];
+                [restRequest setValue: @"ios" forHTTPHeaderField: @"device"];
+                [restRequest setValue: @"merchant" forHTTPHeaderField: @"userType"];
+                
+                [NSURLConnection sendAsynchronousRequest:restRequest queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+                    //TODO: what to do?
+                    return;
+                }];
+                
+                items = nil;
+                
+                break;
+        }
+    } else {
+        NSURL *restURL;
+        switch(buttonIndex) {
+            case 0: //"No" pressed
+                break;
+            case 1: //"Yes" pressed
+                restURL = [NSURL URLWithString:[NSString stringWithFormat: kDeleteMediaUrl, items[beingDeletedIndex][@"_id"]]];
+                NSMutableURLRequest *restRequest = [NSMutableURLRequest requestWithURL:restURL];
+                [restRequest setHTTPMethod:@"DELETE"];
+                [restRequest setValue: @"application/json" forHTTPHeaderField: @"Accept"];
+                [restRequest setValue: @"application/json; charset=utf-8" forHTTPHeaderField: @"content-type"];
+                [restRequest setValue: [defaults valueForKey:NOTIFICATION_TOKEN_KEY.copy] forHTTPHeaderField:@"token"];
+                [restRequest setValue: @"ios" forHTTPHeaderField: @"device"];
+                [restRequest setValue: @"merchant" forHTTPHeaderField: @"userType"];
+                
+                [NSURLConnection sendAsynchronousRequest:restRequest queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+                    //TODO: what to do?
+                    return;
+                }];
+                [items removeObjectAtIndex:beingDeletedIndex];
+                break;
+        }
+        beingDeletedIndex = -1;
+        [self.tableView reloadData];
     }
 }
 
@@ -511,6 +559,103 @@ NSString * USER_ID_KEY=@"userIdKey";
      ];
 
     
+}
+
+- (IBAction)instaImageLongPress:(UIGestureRecognizer *)gestureRecognizer{
+    beingDeletedIndex = ((UIButton*)((UIGestureRecognizer*)gestureRecognizer).view).tag;
+    [self.tableView reloadData];
+}
+
+- (IBAction)dismissLongPress:(id)sender{
+    beingDeletedIndex = -1;
+    beingUnmatchedIndex = -1;
+    [self.tableView reloadData];
+}
+
+- (IBAction) screenshotLongPress:(UIGestureRecognizer *)gestureRecognizer{
+    NSInteger tag = ((UIButton*)((UIGestureRecognizer*)gestureRecognizer).view).tag;
+    NSString *linkToProduct = [items[tag] valueForKey:@"linkToProduct"];
+    if(linkToProduct != nil){
+        beingUnmatchedIndex = tag;
+        [self.tableView reloadData];
+    }
+}
+
+- (IBAction) tapOnScreenShot:(id)sender{
+    if(beingUnmatchedIndex == ((UIButton *)sender).tag){
+        beingDeletedIndex = -1;
+        beingUnmatchedIndex = -1;
+        [self.tableView reloadData];
+    } else {
+        [self performSegueWithIdentifier:@"showProductLink" sender:sender];
+    }
+}
+
+- (IBAction)deleteButtonTapped:(id)sender{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Delete Post"
+                                                    message:@"Are you sure you want to delete this post?"
+                                                   delegate:self
+                                          cancelButtonTitle:@"No"
+                                          otherButtonTitles:@"Yes", nil];
+    [alert show];
+   
+}
+
+- (IBAction)unmatchButtonTapped:(id)sender{
+    NSInteger index = ((UIButton *)sender).tag;
+    NSString *unmatchUrlString = [NSString stringWithFormat:kUnmatchUrl, items[index][@"_id"]];
+    NSString *unmatchURL = [NSURL URLWithString:unmatchUrlString];
+    NSDictionary *jsonDict = [[NSDictionary alloc] initWithObjectsAndKeys:
+                              @"", @"linkToProduct",
+                              nil];
+    
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonDict options:0 error:&error];
+    
+    NSMutableURLRequest *requestForUnmatch = [[NSMutableURLRequest alloc] init];
+    [requestForUnmatch setCachePolicy:NSURLRequestUseProtocolCachePolicy];
+    [requestForUnmatch setHTTPShouldHandleCookies:NO];
+    [requestForUnmatch setTimeoutInterval:30];
+    [requestForUnmatch setHTTPMethod:@"POST"];
+    [requestForUnmatch setURL:unmatchURL];
+    [requestForUnmatch setValue: @"application/json" forHTTPHeaderField: @"Accept"];
+    [requestForUnmatch setValue: @"application/json; charset=utf-8" forHTTPHeaderField: @"content-type"];
+    [requestForUnmatch setHTTPBody: jsonData];
+    
+    [requestForUnmatch setValue: [self getRegId] forHTTPHeaderField: @"token"];
+    [requestForUnmatch setValue: @"ios" forHTTPHeaderField: @"device"];
+    [requestForUnmatch setValue: @"merchant" forHTTPHeaderField: @"userType"];
+    
+    [NSURLConnection sendAsynchronousRequest: requestForUnmatch
+                                       queue: [NSOperationQueue mainQueue]
+                           completionHandler: ^(NSURLResponse *response, NSData *data, NSError *error) {
+                               NSError *jsonError;
+                               NSMutableDictionary *returnedDict = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&jsonError];
+                               
+                               if (jsonError != nil) {
+                                   //TODO
+                                   NSLog(@"%@", [jsonError localizedDescription]);
+                               } else {
+                                   int statusCode = [[returnedDict objectForKey:@"statusCode"] integerValue];
+                                   if(statusCode == 200){
+                                       // TODO
+                                   } else {
+                                       //TODO
+                                       NSLog(@"%@", [error localizedDescription]);
+                                   }
+                               }
+                           }
+    ];
+    
+    NSMutableDictionary *itemCopy = [items[index] mutableCopy];
+    [itemCopy removeObjectForKey:@"linkToProduct"];
+    [itemCopy removeObjectForKey:@"productDescription"];
+    [itemCopy removeObjectForKey:@"productLinkScreenshot"];
+    items[index] = itemCopy;
+    
+    beingUnmatchedIndex = -1;
+
+    [self.tableView reloadData];
 }
 
 - (NSString *)getRegId{

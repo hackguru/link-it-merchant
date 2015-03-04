@@ -14,5 +14,6 @@
 @synthesize productLinkImage = _productLinkImage;
 @synthesize descriptionLabel = _descriptionLabel;
 @synthesize topMargin = _topMargin;
+@synthesize unmatchButton = _unmatchButton;
 
 @end

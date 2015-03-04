@@ -18,6 +18,8 @@
 @property (nonatomic, weak) IBOutlet UIButton *productLinkImage;
 @property (nonatomic, weak) IBOutlet UITextField *descriptionLabel;
 @property (nonatomic, weak) IBOutlet NSLayoutConstraint *topMargin;
+@property (nonatomic, weak) IBOutlet UIButton *deleteButton;
+@property (nonatomic, weak) IBOutlet UIButton *unmatchButton;
 
 @end
 
