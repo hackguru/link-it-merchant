@@ -692,6 +692,7 @@ NSString * USER_ID_KEY=@"userIdKey";
     if(items == nil){
         items = newItems.mutableCopy;
         self.tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
+        [self newItemsAddedToTheTop:items.firstObject];
         return;
     }
     for(int i=0; i<newItems.count; i++){
