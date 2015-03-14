@@ -95,7 +95,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "706"
             endingLineNumber = "706"
-            landmarkName = "-insertIntoItemsSorted:"
+            landmarkName = "-updateItemsWith:"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
